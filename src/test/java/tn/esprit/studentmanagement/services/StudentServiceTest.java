@@ -69,7 +69,7 @@ class StudentServiceTest {
         assertEquals("Jane", result.get(1).getFirstName());
         assertEquals(1L, result.get(0).getIdStudent());
         assertEquals(2L, result.get(1).getIdStudent());
-        assertEquals("syrinebh05@gmail.com", result.get(0).getEmail());  
+        assertEquals("syrinebh05@gmail.com", result.get(0).getEmail());
 
         // Vérifie que la méthode du repository a été appelée
         verify(studentRepository, times(1)).findAll();
