@@ -1,13 +1,13 @@
-# Utilise l'image Alpine avec Java 17 JRE (plus léger)
+# Dockerfile correct pour Spring Boot
 FROM eclipse-temurin:17-jre-alpine
 
-# Définit le répertoire de travail dans le conteneur
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Copie le fichier JAR de l'application
+# Copier le fichier JAR
 COPY target/student-management-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose le port de l'application
+# Exposer le port (Spring Boot utilise 8080 par défaut)
 EXPOSE 8081
 
 # Commande pour exécuter l'application

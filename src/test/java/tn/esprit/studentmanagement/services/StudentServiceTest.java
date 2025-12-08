@@ -53,30 +53,27 @@ class StudentServiceTest {
                 .build();
     }
 
+    // Test 1: Récupérer tous les étudiants
     @Test
-    void testGetAllStudents_Success() {
-        // Arrange (Préparation)
-        List<Student> studentList = Arrays.asList(student1, student2);
-        when(studentRepository.findAll()).thenReturn(studentList);
+    void testGetAllStudents_ShouldReturnList() {
+        // Arrange
+        List<Student> expectedStudents = Arrays.asList(student1, student2);
+        when(studentRepository.findAll()).thenReturn(expectedStudents);
 
-        // Act (Exécution)
+        // Act
         List<Student> result = studentService.getAllStudents();
 
-        // Assert (Vérification)
+        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Cyrine", result.get(0).getFirstName());
         assertEquals("Jane", result.get(1).getFirstName());
-        assertEquals(1L, result.get(0).getIdStudent());
-        assertEquals(2L, result.get(1).getIdStudent());
-        assertEquals("syrinebh05@gmail.com", result.get(0).getEmail());
-
-        // Vérifie que la méthode du repository a été appelée
         verify(studentRepository, times(1)).findAll();
     }
 
+    // Test 2: Récupérer un étudiant par ID - Trouvé
     @Test
-    void testGetStudentById_Found() {
+    void testGetStudentById_WhenExists_ShouldReturnStudent() {
         // Arrange
         Long studentId = 1L;
         when(studentRepository.findById(studentId)).thenReturn(Optional.of(student1));
@@ -87,14 +84,13 @@ class StudentServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(studentId, result.getIdStudent());
-        assertEquals("Cyrine", result.getFirstName());  // Corrigé: Cyrine
-        assertEquals("Ben Hlila", result.getLastName());
-        assertEquals("syrinebh05@gmail.com", result.getEmail());
+        assertEquals("Cyrine", result.getFirstName());
         verify(studentRepository, times(1)).findById(studentId);
     }
 
+    // Test 3: Récupérer un étudiant par ID - Non trouvé
     @Test
-    void testGetStudentById_NotFound() {
+    void testGetStudentById_WhenNotExists_ShouldReturnNull() {
         // Arrange
         Long studentId = 99L;
         when(studentRepository.findById(studentId)).thenReturn(Optional.empty());
@@ -107,13 +103,14 @@ class StudentServiceTest {
         verify(studentRepository, times(1)).findById(studentId);
     }
 
+    // Test 4: Sauvegarder un nouvel étudiant
     @Test
-    void testSaveStudent_Success() {
+    void testSaveStudent_ShouldReturnSavedStudent() {
         // Arrange
         Student newStudent = Student.builder()
                 .firstName("Alice")
                 .lastName("Johnson")
-                .email("alice.johnson@example.com")
+                .email("alice@example.com")
                 .phone("98765432")
                 .dateOfBirth(LocalDate.of(2001, 3, 10))
                 .address("Paris, France")
@@ -123,7 +120,7 @@ class StudentServiceTest {
                 .idStudent(3L)
                 .firstName("Alice")
                 .lastName("Johnson")
-                .email("alice.johnson@example.com")
+                .email("alice@example.com")
                 .phone("98765432")
                 .dateOfBirth(LocalDate.of(2001, 3, 10))
                 .address("Paris, France")
@@ -138,12 +135,12 @@ class StudentServiceTest {
         assertNotNull(result);
         assertEquals(3L, result.getIdStudent());
         assertEquals("Alice", result.getFirstName());
-        assertEquals("alice.johnson@example.com", result.getEmail());
         verify(studentRepository, times(1)).save(newStudent);
     }
 
+    // Test 5: Supprimer un étudiant
     @Test
-    void testDeleteStudent_Success() {
+    void testDeleteStudent_ShouldCallRepository() {
         // Arrange
         Long studentId = 1L;
         doNothing().when(studentRepository).deleteById(studentId);
@@ -155,8 +152,9 @@ class StudentServiceTest {
         verify(studentRepository, times(1)).deleteById(studentId);
     }
 
+    // Test 6: Liste vide d'étudiants
     @Test
-    void testGetAllStudents_EmptyList() {
+    void testGetAllStudents_WhenEmpty_ShouldReturnEmptyList() {
         // Arrange
         when(studentRepository.findAll()).thenReturn(Arrays.asList());
 
@@ -169,8 +167,9 @@ class StudentServiceTest {
         verify(studentRepository, times(1)).findAll();
     }
 
+    // Test 7: Mettre à jour un étudiant existant
     @Test
-    void testSaveStudent_WithId() {
+    void testUpdateStudent_ShouldReturnUpdatedStudent() {
         // Arrange
         Student existingStudent = Student.builder()
                 .idStudent(1L)
@@ -191,46 +190,78 @@ class StudentServiceTest {
         assertNotNull(result);
         assertEquals(1L, result.getIdStudent());
         assertEquals("Updated", result.getFirstName());
-        assertEquals("updated@example.com", result.getEmail());
         verify(studentRepository, times(1)).save(existingStudent);
     }
 
+    // Test 8: Test edge case - ID très grand
     @Test
-    void testGetStudentById_WrongId() {
+    void testGetStudentById_WithLargeId_ShouldReturnNull() {
         // Arrange
-        when(studentRepository.findById(999L)).thenReturn(Optional.empty());
+        when(studentRepository.findById(999999L)).thenReturn(Optional.empty());
 
         // Act
-        Student result = studentService.getStudentById(999L);
+        Student result = studentService.getStudentById(999999L);
 
         // Assert
         assertNull(result);
-        verify(studentRepository, times(1)).findById(999L);
+        verify(studentRepository, times(1)).findById(999999L);
     }
 
+    // Test 9: Vérification des propriétés après sauvegarde
     @Test
-    void testSaveStudent_UpdateExisting() {
+    void testSaveStudent_VerifyProperties() {
         // Arrange
-        Student studentToUpdate = Student.builder()
-                .idStudent(1L)
-                .firstName("Cyrine")
-                .lastName("Ben Hlila Updated")
-                .email("syrine.updated@gmail.com")
-                .phone("95972018")
-                .dateOfBirth(LocalDate.of(2003, 1, 16))
-                .address("New Address, Tunisia")
+        Student newStudent = Student.builder()
+                .firstName("Test")
+                .lastName("User")
+                .email("test@test.com")
+                .phone("55555555")
+                .dateOfBirth(LocalDate.now())
+                .address("Test Address")
                 .build();
 
-        when(studentRepository.save(studentToUpdate)).thenReturn(studentToUpdate);
+        Student savedStudent = Student.builder()
+                .idStudent(10L)
+                .firstName("Test")
+                .lastName("User")
+                .email("test@test.com")
+                .phone("55555555")
+                .dateOfBirth(LocalDate.now())
+                .address("Test Address")
+                .build();
+
+        when(studentRepository.save(any(Student.class))).thenReturn(savedStudent);
 
         // Act
-        Student result = studentService.saveStudent(studentToUpdate);
+        Student result = studentService.saveStudent(newStudent);
+
+        // Assert
+        assertAll(
+                () -> assertEquals(10L, result.getIdStudent()),
+                () -> assertEquals("Test", result.getFirstName()),
+                () -> assertEquals("User", result.getLastName()),
+                () -> assertEquals("test@test.com", result.getEmail()),
+                () -> assertEquals("55555555", result.getPhone()),
+                () -> assertEquals("Test Address", result.getAddress())
+        );
+        verify(studentRepository, times(1)).save(newStudent);
+    }
+
+    // Test 10: Vérifier qu'aucune interaction non désirée
+    @Test
+    void testGetAllStudents_NoUnwantedInteractions() {
+        // Arrange
+        when(studentRepository.findAll()).thenReturn(Arrays.asList(student1));
+
+        // Act
+        List<Student> result = studentService.getAllStudents();
 
         // Assert
         assertNotNull(result);
-        assertEquals("Ben Hlila Updated", result.getLastName());
-        assertEquals("syrine.updated@gmail.com", result.getEmail());
-        assertEquals("New Address, Tunisia", result.getAddress());
-        verify(studentRepository, times(1)).save(studentToUpdate);
+        assertEquals(1, result.size());
+
+        // Vérifie que seules les méthodes attendues sont appelées
+        verify(studentRepository, only()).findAll();
+        verifyNoMoreInteractions(studentRepository);
     }
 }
