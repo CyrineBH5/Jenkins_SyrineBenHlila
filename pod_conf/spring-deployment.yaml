@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: student_management
+      app: spring-app
   template:
     metadata:
       labels:
-        app: student_management
+        app: spring-app
     spec:
       containers:
         - name: spring-container
